@@ -1,2 +1,5 @@
+com/example/servlet/Controller.class
 com/example/servlet/FrontControllerServlet.class
+com/example/servlet/BallsController.class
 com/example/Main.class
+com/example/util/Utilitaire.class
