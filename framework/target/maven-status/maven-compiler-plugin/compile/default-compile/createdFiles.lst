@@ -1,5 +1,6 @@
-com/example/servlet/Controller.class
-com/example/servlet/FrontControllerServlet.class
-com/example/servlet/BallsController.class
-com/example/Main.class
-com/example/util/Utilitaire.class
+randy/framework/annotation/Controller.class
+randy/framework/servlet/FrontControllerServlet.class
+randy/framework/Main.class
+randy/framework/model/Mapping.class
+randy/framework/annotation/UrlMapping.class
+randy/framework/util/Utilitaire.class
