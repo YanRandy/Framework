@@ -1,6 +1,7 @@
 package randy.framework.util;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public class Utilitaire {
      * Scanne un package et retourne la liste des noms de classes annotées par @Controller
      */
     public static Map<String, Mapping> scanPaths(String packageToScan) {
-        Map<String, Mapping> mappedUrl = new java.util.HashMap<>();
+        Map<String, Mapping> mappedUrl = new HashMap<>();
         ClassGraph cg = new ClassGraph().enableClassInfo().enableAnnotationInfo();
         
         if (packageToScan != null && !packageToScan.isBlank()) {
@@ -28,7 +29,6 @@ public class Utilitaire {
         }
 
         try (ScanResult scanResult = cg.scan()) {
-            // On récupère toutes les classes qui portent notre annotation spécifique
             List<String> controllers = scanResult
                     .getClassesWithAnnotation("randy.framework.annotation.Controller")
                     .getNames(); // Retourne une List<String> des noms de classes
