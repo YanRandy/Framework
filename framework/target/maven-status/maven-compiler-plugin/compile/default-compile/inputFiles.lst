@@ -1,5 +1,7 @@
-/home/randylam/Documents/GitHub/Framework/framework/src/main/java/com/example/Main.java
-/home/randylam/Documents/GitHub/Framework/framework/src/main/java/com/example/servlet/BallsController.java
-/home/randylam/Documents/GitHub/Framework/framework/src/main/java/com/example/servlet/Controller.java
-/home/randylam/Documents/GitHub/Framework/framework/src/main/java/com/example/servlet/FrontControllerServlet.java
-/home/randylam/Documents/GitHub/Framework/framework/src/main/java/com/example/util/Utilitaire.java
+/home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/Main.java
+/home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/annotation/Controller.java
+/home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/annotation/UrlMapping.java
+/home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/model/Mapping.java
+/home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/servlet/BallsController.java
+/home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/servlet/FrontControllerServlet.java
+/home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/util/Utilitaire.java

@@ -1,4 +1,4 @@
-package com.example;
+package randy.framework;
 
 public class Main {
     public static void main(String[] args) {
