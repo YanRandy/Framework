@@ -11,4 +11,5 @@ import java.lang.annotation.Target;
 
 public @interface UrlMapping {
     String value();
+    String[] method() default {"GET", "POST"};
 }
