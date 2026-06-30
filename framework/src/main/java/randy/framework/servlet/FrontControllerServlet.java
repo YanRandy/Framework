@@ -8,13 +8,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import randy.framework.model.Mapping;
 import randy.framework.model.UrlKey;
-import randy.framework.util.Utilitaire;
 
 public class FrontControllerServlet extends HttpServlet {
     private Map<UrlKey, Mapping> urlList = new HashMap<>();
@@ -22,8 +22,13 @@ public class FrontControllerServlet extends HttpServlet {
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        String packageToScan = config.getInitParameter("packageToScan");
-        this.urlList = Utilitaire.scanPaths(packageToScan);
+        ServletContext context = config.getServletContext();
+        this.urlList = (Map<UrlKey, Mapping>) context.getAttribute("urlList");
+        if (urlList != null) {
+            System.out.println("[FrontController] Récupération des " + this.urlList.size() + " routes effectuée.");
+        } else {
+            System.err.println("[FrontController] Erreur : Aucune table de routage trouvée dans le contexte !");
+        }
         System.out.println("URLs mapped: " + urlList.size());
     }
 
@@ -73,8 +78,7 @@ public class FrontControllerServlet extends HttpServlet {
                 Object controllerInstance = clazz.getDeclaredConstructor().newInstance();
                 Method targetMethod = clazz.getDeclaredMethod(map.getMethod());
                 Object result = targetMethod.invoke(controllerInstance);
-                // Exécution de la méthode
-                targetMethod.invoke(controllerInstance);
+                // targetMethod.invoke(controllerInstance);
                 out.println("<p style='color: blue; font-weight: bold;'>[Succès] La méthode du contrôleur a été exécutée. Veuillez consulter les logs de votre serveur.</p>");
                 if (result != null) {
                     out.println("<p style='color: green;'><strong>Résultat :</strong> " + result + "</p>");

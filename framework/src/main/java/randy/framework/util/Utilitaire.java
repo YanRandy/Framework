@@ -35,7 +35,7 @@ public class Utilitaire {
         try (ScanResult scanResult = cg.scan()) {
             List<String> controllers = scanResult
                     .getClassesWithAnnotation(Controller.class.getName())
-                    .getNames(); // Retourne une List<String> des noms de classes
+                    .getNames();
             for (String className : controllers) {
                 try {
                     Class<?> clazz = Class.forName(className);
