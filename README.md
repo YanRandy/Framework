@@ -139,6 +139,10 @@ The renderer is selected automatically based on the configured suffix (`.jsp`, `
 
 ---
 
+## Database entry
+mysql -u root -p < librairie.sql
+
+---
 ## Build and install
 
 ```bash

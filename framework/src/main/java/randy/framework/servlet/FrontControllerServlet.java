@@ -11,12 +11,15 @@ import java.util.Map;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import randy.framework.annotation.RestApi;
 import randy.framework.helper.ViewRenderer;
 import randy.framework.model.Mapping;
 import randy.framework.model.ModelAndView;
@@ -26,6 +29,7 @@ import randy.framework.util.JspViewRenderer;
 
 public class FrontControllerServlet extends HttpServlet {
     private Map<UrlKey, Mapping> urlList = new HashMap<>();
+    private static final ObjectMapper mapper = new ObjectMapper();
     private static final Map<String, ViewRenderer> RENDERERS = Map.of(
             ".jsp", new JspViewRenderer(),
             ".html", new HtmlViewRenderer(),
@@ -116,6 +120,15 @@ public class FrontControllerServlet extends HttpServlet {
                 } else {
                     result = targetMethod.invoke(controllerInstance);
                 }
+                if (targetMethod.isAnnotationPresent(RestApi.class)) {
+                    response.setContentType("application/json;charset=UTF-8");
+                    try {
+                        response.getWriter().print(toJson(result));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return;
+                }
                 if (result instanceof ModelAndView mv) {
                     for (Map.Entry<String, Object[]> entry : mv.getModel().entrySet()) {
                         request.setAttribute(entry.getKey(), entry.getValue());
@@ -204,5 +217,12 @@ public class FrontControllerServlet extends HttpServlet {
             throw new ServletException("Aucun renderer configuré pour le suffixe : " + suffix);
         }
         renderer.render(request, response, path);
+    }
+
+    private String toJson(Object obj) throws Exception {
+        if (obj instanceof String s) {
+            return "\"" + s + "\""; // pas besoin de Jackson pour une String
+        }
+        return mapper.writeValueAsString(obj); // List, Objet, etc.
     }
 }
