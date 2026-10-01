@@ -44,4 +44,16 @@ INSERT INTO livres (titre, auteur) VALUES
 -- Vérification
 -- ============================================
 
-SELECT * FROM livres;
+CREATE TABLE Personne(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    prenom VARCHAR(255) NOT NULL,
+    age INT NOT NULL
+);
+
+INSERT INTO Personne (nom, prenom, age) VALUES
+    ('Dupont', 'Jean', 30),
+    ('Durand', 'Marie', 25),
+    ('Martin', 'Pierre', 40),
+    ('Bernard', 'Sophie', 35),
+    ('Petit', 'Lucie', 28);
