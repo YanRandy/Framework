@@ -72,7 +72,7 @@ public class FrontControllerServlet extends HttpServlet {
             Class<?> clazz      = Class.forName(map.getClassName());
             Object   instance   = clazz.getDeclaredConstructor().newInstance();
             Method   method     = invoker.findMethod(clazz, map.getMethod());
-            Object   result     = invoker.invoke(method, instance, spring);
+            Object   result     = invoker.invoke(method, instance, spring, request);
             boolean  handled    = resultHandler.handle(method, result, request, response);
 
             if (!handled) {
