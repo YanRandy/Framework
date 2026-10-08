@@ -2,8 +2,6 @@ package randy.framework.servlet;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.springframework.context.ApplicationContext;
 
@@ -60,15 +58,14 @@ public class ControllerExecServlet {
             fieldName = Character.toLowerCase(fieldName.charAt(0))
                     + fieldName.substring(1);
             String value = req.getParameter(fieldName);
-            if (value != null) {
-                try {
-                    setters.invoke(instance, convertValue(value, setters.getParameterTypes()[0]));
-                } catch (Exception e) {
-                    throw new ServletException("Erreur lors de la conversion de la valeur : " + value, e);
-                }
+            if (value == null)
+                continue;
+
+            try {
+                setters.invoke(instance, convertValue(value, setters.getParameterTypes()[0]));
+            } catch (Exception e) {
+                throw new ServletException("Erreur lors de la conversion de la valeur : " + value, e);
             }
-            Class<?> fieldType = setters.getParameterTypes()[0];
-            setters.invoke(instance, convertValue(value, fieldType));
         }
         return instance;
     }
