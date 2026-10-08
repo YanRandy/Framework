@@ -30,16 +30,13 @@ public class FrontControllerServlet extends HttpServlet {
         super.init(config);
         ServletContext ctx = config.getServletContext();
 
-        // erreur de démarrage
         Exception err = (Exception) ctx.getAttribute("deploymentError");
         if (err != null) throw new ServletException(err.getMessage(), err);
 
-        // urlList
         Map<UrlKey, Mapping> load = (Map<UrlKey, Mapping>) ctx.getAttribute("urlList");
         if (load == null) throw new ServletException("urlList introuvable !");
         this.urlList = load;
 
-        // collaborateurs
         String prefix = (String) ctx.getAttribute("prefix");
         String suffix = (String) ctx.getAttribute("suffix");
         this.registry      = new ViewRendererRegistry();
