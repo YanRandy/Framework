@@ -1,8 +1,10 @@
 package randy.framework.servlet;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.context.ApplicationContext;
@@ -47,8 +49,9 @@ public class ControllerExecServlet {
     }
 
     // private boolean isPrimitive(Class<?> type) {
-    //     return type.isPrimitive() || type == String.class || type == Integer.class || type == Long.class
-    //             || type == Double.class || type == Boolean.class;
+    // return type.isPrimitive() || type == String.class || type == Integer.class ||
+    // type == Long.class
+    // || type == Double.class || type == Boolean.class;
     // }
 
     // fonction de test si bindObject ne va pas cycle sur lui meme pour toujours
@@ -85,8 +88,7 @@ public class ControllerExecServlet {
                 } catch (Exception e) {
                     throw new ServletException("Erreur lors de la conversion de la valeur : " + value, e);
                 }
-            }
-            else {
+            } else {
                 if (!visiting.contains(fieldType)) {
                     Object nestedObj = bindObject(fieldType, key, req, visiting);
                     if (nestedObj != null) {
@@ -98,6 +100,29 @@ public class ControllerExecServlet {
         }
         visiting.remove(type); // retire le type
         return instance;
+    }
+
+    private Object bindArray(Parameter param, HttpServletRequest req) throws Exception {
+        String values[] = req.getParameterValues(param.getName());
+        if (values == null)
+            return null;
+        // getComponentType() retourne le type des Objets dans l'array.
+        Class<?> componentType = param.getType().getComponentType();
+        Object array = Array.newInstance(componentType, values.length);
+        for (int i = 0; i < values.length; i++) {
+            if (TypeResolver.isPrimitive(componentType)) {
+                Array.set(array, i, convertValue(values[i], componentType));
+            } else {
+                String prefix = param.getName() + "[" + i + "]";
+                Array.set(array, i, bindObject(componentType, prefix, req));
+            }
+        }
+
+        return array;
+    }
+
+    private List<Object> bindList(Class<?> type, String prefix, HttpServletRequest req) throws Exception {
+        return null;
     }
 
     private static Object convertValue(String value, Class<?> params) {
