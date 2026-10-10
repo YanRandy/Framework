@@ -2,6 +2,7 @@
 /home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/annotation/Controller.java
 /home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/annotation/RestApi.java
 /home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/annotation/UrlMapping.java
+/home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/binding/TypeResolver.java
 /home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/helper/ViewRenderer.java
 /home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/listener/InitListener.java
 /home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/model/Mapping.java

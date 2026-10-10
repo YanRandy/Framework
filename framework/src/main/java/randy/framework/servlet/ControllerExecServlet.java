@@ -3,6 +3,9 @@ package randy.framework.servlet;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -133,14 +136,35 @@ public class ControllerExecServlet {
                 Array.set(array, i, bindObject(componentType, prefix, req));
             }
         }
-
         return array;
     }
 
-    private List<Object> bindList(Class<?> type, String prefix, HttpServletRequest req) throws Exception {
-        return null;
+    private Class<?> getInnerType(Type genericType) {
+        if (genericType instanceof ParameterizedType pt) {
+            return (Class<?>) pt.getActualTypeArguments()[0];
+            // List<String> → String.class
+            // List<Personne> → Personne.class
+        }
+        return String.class; // fallback si pas de générique
     }
 
+    private List<Object> bindList(Parameter param, HttpServletRequest req) throws Exception {
+        String values[] = req.getParameterValues(param.getName());
+        if (values == null)
+            return new ArrayList<>();
+        Class<?> innerType = getInnerType(param.getParameterizedType());
+        List<Object> list = new ArrayList<>();
+        for (int i=0; i<values.length; i++) {
+            String value = values[i];
+            if (TypeResolver.isPrimitive(innerType)) {
+                list.add(convertValue(value, innerType));
+            } else {
+                String prefix = param.getName() + "[" + i + "]";
+                list.add(bindObject(innerType, prefix, req));
+            }
+        }
+        return list;
+    }
     private static Object convertValue(String value, Class<?> params) {
         if (value == null)
             return null;
