@@ -2,11 +2,14 @@ package randy.framework.servlet;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.context.ApplicationContext;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import net.bytebuddy.implementation.bind.annotation.Empty;
 
 public class ControllerExecServlet {
     public Method findMethod(Class<?> clazz, String methodName) throws ServletException {
@@ -36,7 +39,7 @@ public class ControllerExecServlet {
                 String val = req.getParameter(params[i].getName());
                 args[i] = convertValue(val, params[i].getType());
             } else {
-                args[i] = bindObject(type, req);
+                args[i] = bindObject(type, params[i].getName(), req);
             }
         }
         return method.invoke(instance, args);
@@ -47,7 +50,16 @@ public class ControllerExecServlet {
                 || type == Double.class || type == Boolean.class;
     }
 
-    private Object bindObject(Class<?> type, HttpServletRequest req) throws Exception {
+    // fonction de test si bindObject ne va pas cycle sur lui meme pour toujours
+    public Object bindObject(Class<?> type, String prefix, HttpServletRequest req) throws Exception {
+        return bindObject(type, prefix, req, new HashSet<Class<?>>());
+    }
+
+    private Object bindObject(Class<?> type, String prefix, HttpServletRequest req, Set<Class<?>> visiting)
+            throws Exception {
+        if (!visiting.add(type)) {
+            return null;
+        }
         Object instance = type.getDeclaredConstructor().newInstance();
         for (Method setters : type.getDeclaredMethods()) {
             if (!setters.getName().startsWith("set"))
@@ -57,16 +69,33 @@ public class ControllerExecServlet {
             String fieldName = setters.getName().substring(3);
             fieldName = Character.toLowerCase(fieldName.charAt(0))
                     + fieldName.substring(1);
-            String value = req.getParameter(fieldName);
-            if (value == null)
-                continue;
 
-            try {
-                setters.invoke(instance, convertValue(value, setters.getParameterTypes()[0]));
-            } catch (Exception e) {
-                throw new ServletException("Erreur lors de la conversion de la valeur : " + value, e);
+            String key = prefix.isEmpty() ? fieldName : prefix + "." + fieldName;
+            // String value = req.getParameter(fieldName);
+            Class<?> fieldType = setters.getParameterTypes()[0];
+            if (isPrimitive(fieldType)) {
+                String value = req.getParameter(key);
+
+                if (value == null)
+                    continue;
+
+                try {
+                    setters.invoke(instance, convertValue(value, fieldType));
+                } catch (Exception e) {
+                    throw new ServletException("Erreur lors de la conversion de la valeur : " + value, e);
+                }
             }
+            else {
+                if (!visiting.contains(fieldType)) {
+                    Object nestedObj = bindObject(fieldType, key, req, visiting);
+                    if (nestedObj != null) {
+                        setters.invoke(instance, nestedObj);
+                    }
+                }
+            }
+
         }
+        visiting.remove(type); // retire le type
         return instance;
     }
 
@@ -79,6 +108,8 @@ public class ControllerExecServlet {
             return Integer.valueOf(value);
         if (params == long.class || params == Long.class)
             return Long.valueOf(value);
+        if (params == float.class || params == Float.class)
+            return Float.valueOf(value);
         if (params == double.class || params == Double.class)
             return Double.valueOf(value);
         if (params == boolean.class || params == Boolean.class)
