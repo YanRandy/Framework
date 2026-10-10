@@ -35,15 +35,28 @@ public class ControllerExecServlet {
 
         Object[] args = new Object[params.length];
         for (int i = 0; i < params.length; i++) {
-            Class<?> type = params[i].getType();
-            if (ApplicationContext.class.isAssignableFrom(params[i].getType())) {
-                args[i] = ctx;
-            } else if (TypeResolver.isPrimitive(type)) {
-                String val = req.getParameter(params[i].getName());
-                args[i] = convertValue(val, params[i].getType());
-            } else {
-                args[i] = bindObject(type, params[i].getName(), req);
-            }
+            // Class<?> type = params[i].getType();
+            // if (ApplicationContext.class.isAssignableFrom(params[i].getType())) {
+            // args[i] = ctx;
+            // } else if (TypeResolver.isPrimitive(type)) {
+            // String val = req.getParameter(params[i].getName());
+            // args[i] = convertValue(val, params[i].getType());
+            // } else {
+            // args[i] = bindObject(type, params[i].getName(), req);
+            // }
+            args[i] = switch (TypeResolver.resolve(params[i])) {
+                case APPLICATION_CONTEXT -> ctx;
+                case PRIMITIVE -> convertValue(
+                        req.getParameter(params[i].getName()),
+                        params[i].getType());
+                case ARRAY -> bindArray(params[i], req); // ← ici
+                case LIST -> bindList(params[i], req);
+                case OBJECT -> bindObject(
+                        params[i].getType(),
+                        params[i].getName(),
+                        req);
+                default -> throw new IllegalArgumentException("Unexpected value: " + TypeResolver.resolve(params[i]));
+            };
         }
         return method.invoke(instance, args);
     }
@@ -89,6 +102,9 @@ public class ControllerExecServlet {
                     throw new ServletException("Erreur lors de la conversion de la valeur : " + value, e);
                 }
             } else {
+                if (fieldType.isArray() || List.class.isAssignableFrom(fieldType)) {
+                    continue; // on aura la gestion de bindList ici.
+                }
                 if (!visiting.contains(fieldType)) {
                     Object nestedObj = bindObject(fieldType, key, req, visiting);
                     if (nestedObj != null) {
