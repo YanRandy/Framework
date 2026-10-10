@@ -6,8 +6,10 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.context.ApplicationContext;
@@ -52,8 +54,9 @@ public class ControllerExecServlet {
                 case PRIMITIVE -> convertValue(
                         req.getParameter(params[i].getName()),
                         params[i].getType());
-                case ARRAY -> bindArray(params[i], req); // ← ici
+                case ARRAY -> bindArray(params[i], req);
                 case LIST -> bindList(params[i], req);
+                case MAP -> bindMap(params[i], req);
                 case OBJECT -> bindObject(
                         params[i].getType(),
                         params[i].getName(),
@@ -154,7 +157,7 @@ public class ControllerExecServlet {
             return new ArrayList<>();
         Class<?> innerType = getInnerType(param.getParameterizedType());
         List<Object> list = new ArrayList<>();
-        for (int i=0; i<values.length; i++) {
+        for (int i = 0; i < values.length; i++) {
             String value = values[i];
             if (TypeResolver.isPrimitive(innerType)) {
                 list.add(convertValue(value, innerType));
@@ -165,6 +168,55 @@ public class ControllerExecServlet {
         }
         return list;
     }
+
+    // récupérer [K, V] dans Map<K, V>
+    private Type[] getMapTypeArgs(Type genericType) {
+        if (genericType instanceof ParameterizedType pt) {
+            return pt.getActualTypeArguments(); // → [String.class, String[].class]
+        }
+        return new Type[] { String.class, String.class }; // fallback
+    }
+
+    private Object resolveMapValue(Class<?> valueType, String[] rawValues,
+            String key, HttpServletRequest req) throws Exception {
+
+        // Map<String, String[]> → valeur = tableau brut
+        if (valueType == String[].class || valueType.isArray()) {
+            Class<?> componentType = valueType.getComponentType();
+            Object array = Array.newInstance(componentType, rawValues.length);
+            for (int i = 0; i < rawValues.length; i++) {
+                Array.set(array, i, convertValue(rawValues[i], componentType));
+            }
+            return array;
+        }
+
+        // Map<String, String> → première valeur seulement
+        if (TypeResolver.isPrimitive(valueType)) {
+            return convertValue(rawValues[0], valueType);
+        }
+
+        // Map<String, Personne> → bindObject avec la clé comme préfixe
+        // ex: key="employe" → cherche employe.nom, employe.prenom...
+        return bindObject(valueType, key, req);
+    }
+
+    private Object bindMap(Parameter param, HttpServletRequest req) throws Exception {
+        Type[] MapTypes = getMapTypeArgs(param.getParameterizedType());
+        Class<?> keyType = (Class<?>) MapTypes[0];
+        Class<?> valueType = (Class<?>) MapTypes[1];
+
+        // classic map of http
+        Map<String, String[]> rawMap = req.getParameterMap();
+        Map<Object, Object> result = new HashMap<>();
+
+        for (Map.Entry<String, String[]> entry : rawMap.entrySet()) {
+            Object key = convertValue(entry.getKey(), keyType);
+            Object value = resolveMapValue(valueType, entry.getValue(), entry.getKey(), req);
+            result.put(key, value);
+        }
+        return result;
+    }
+
     private static Object convertValue(String value, Class<?> params) {
         if (value == null)
             return null;
