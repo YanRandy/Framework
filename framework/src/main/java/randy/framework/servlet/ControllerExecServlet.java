@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import net.bytebuddy.implementation.bind.annotation.Empty;
+import randy.framework.binding.TypeResolver;
 
 public class ControllerExecServlet {
     public Method findMethod(Class<?> clazz, String methodName) throws ServletException {
@@ -35,7 +36,7 @@ public class ControllerExecServlet {
             Class<?> type = params[i].getType();
             if (ApplicationContext.class.isAssignableFrom(params[i].getType())) {
                 args[i] = ctx;
-            } else if (isPrimitive(type)) {
+            } else if (TypeResolver.isPrimitive(type)) {
                 String val = req.getParameter(params[i].getName());
                 args[i] = convertValue(val, params[i].getType());
             } else {
@@ -45,10 +46,10 @@ public class ControllerExecServlet {
         return method.invoke(instance, args);
     }
 
-    private boolean isPrimitive(Class<?> type) {
-        return type.isPrimitive() || type == String.class || type == Integer.class || type == Long.class
-                || type == Double.class || type == Boolean.class;
-    }
+    // private boolean isPrimitive(Class<?> type) {
+    //     return type.isPrimitive() || type == String.class || type == Integer.class || type == Long.class
+    //             || type == Double.class || type == Boolean.class;
+    // }
 
     // fonction de test si bindObject ne va pas cycle sur lui meme pour toujours
     public Object bindObject(Class<?> type, String prefix, HttpServletRequest req) throws Exception {
@@ -73,7 +74,7 @@ public class ControllerExecServlet {
             String key = prefix.isEmpty() ? fieldName : prefix + "." + fieldName;
             // String value = req.getParameter(fieldName);
             Class<?> fieldType = setters.getParameterTypes()[0];
-            if (isPrimitive(fieldType)) {
+            if (TypeResolver.isPrimitive(fieldType)) {
                 String value = req.getParameter(key);
 
                 if (value == null)
@@ -99,7 +100,7 @@ public class ControllerExecServlet {
         return instance;
     }
 
-    public Object convertValue(String value, Class<?> params) {
+    private static Object convertValue(String value, Class<?> params) {
         if (value == null)
             return null;
         if (params == String.class)
