@@ -12,7 +12,7 @@ The code targets Java 21 and runs inside a Jakarta Servlet 5 container (tested w
 
 ```
 HTTP request
-  └── FrontControllerServlet              (single entry point, mapped on /)
+  └── FrontControllerServlet              (single entry point, mapped on /*)
         ├── builds UrlKey(pathInfo, httpMethod)
         ├── looks it up in the urlList map   ── miss ──▶ RouteDebugger.renderNotFound()
         ├── Class.forName(className) → newInstance() → findMethod()

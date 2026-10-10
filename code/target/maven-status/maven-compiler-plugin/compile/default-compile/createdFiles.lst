@@ -1,0 +1,13 @@
+com/example/repository/PersonneRepository.class
+com/example/repository/LivreRepository.class
+com/example/service/LivreService.class
+com/example/controller/C.class
+com/example/controller/B.class
+com/example/entity/Personne.class
+com/example/controller/A.class
+com/example/entity/Livre.class
+com/example/controller/BindController.class
+com/example/service/PersonneService.class
+com/example/controller/TestController.class
+com/example/Main.class
+com/example/entity/Test.class
