@@ -1,0 +1,13 @@
+<!-- Framework/pom.xml -->
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>randy</groupId>
+    <artifactId>parent</artifactId>
+    <version>1.0</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>framework</module>  <!-- buildé en premier -->
+        <module>code</module>       <!-- buildé en second -->
+    </modules>
+</project>
