@@ -4,13 +4,13 @@ package com.example.controller;
 import java.util.List;
 import java.util.Map;
 
+import com.example.entity.Livre;
 import com.example.entity.Personne;
 
 import randy.framework.annotation.Controller;
 import randy.framework.annotation.RestApi;
 import randy.framework.annotation.UrlMapping;
-
-import com.example.entity.Livre;
+import randy.framework.model.MapFile;
 
 @Controller
 public class BindController {
@@ -21,10 +21,9 @@ public class BindController {
     @UrlMapping(value = "/api/binding/primitifs", method = "GET")
     public Object testPrimitifs(String nom, int age, boolean actif) {
         return Map.of(
-            "nom",   nom,
-            "age",   age,
-            "actif", actif
-        );
+                "nom", nom,
+                "age", age,
+                "actif", actif);
     }
 
     // ── Cas 1a — String[] ──────────────────────────────────────────
@@ -49,7 +48,8 @@ public class BindController {
     @UrlMapping(value = "/api/binding/notes", method = "GET")
     public Object testNotes(int[] notes) {
         int total = 0;
-        for (int n : notes) total += n;
+        for (int n : notes)
+            total += n;
         return Map.of("notes", notes, "total", total);
     }
 
@@ -83,5 +83,43 @@ public class BindController {
     @UrlMapping(value = "/api/binding/map", method = "GET")
     public Object testMap(Map<String, String[]> filtres) {
         return filtres;
+    }
+
+    // ── Cas 5 — Recursivite ────────────────────────────────────
+
+    @RestApi
+    @UrlMapping(value = "/api/binding/recursif", method = "GET")
+    public Object testRecursif(Personne personne) {
+        return personne;
+    }
+
+    // Cas suivante l'Upload fichier
+
+    // // Un seul fichier
+    // @UrlMapping(value = "/upload", method = "POST")
+    // public String upload(MapFile photo) {
+    //     System.out.println(photo.getFilename()); // "photo.jpg"
+    //     System.out.println(photo.getExtension()); // "jpg"
+    //     System.out.println(photo.getFile().size() + " bytes");
+    //     return "confirmation";
+    // }
+
+    // Plusieurs fichiers
+    @UrlMapping(value = "/upload/multi", method = "POST")
+    public String uploadMulti(Map<String, MapFile> fichiers) {
+        fichiers.forEach((name, file) -> System.out.println(name + " → " + file.getFilename()));
+        return "confirmation";
+    }
+
+    // Changer dans BindController
+    @RestApi // ← ajouter
+    @UrlMapping(value = "/upload", method = "POST")
+    public Object upload(MapFile photo) {
+        if (photo == null)
+            return Map.of("error", "null");
+        return Map.of(
+                "filename", photo.getFilename(),
+                "extension", photo.getExtension(),
+                "size", photo.getFile().size());
     }
 }

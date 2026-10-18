@@ -6,6 +6,7 @@
 /home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/binding/TypeResolver.java
 /home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/helper/ViewRenderer.java
 /home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/listener/InitListener.java
+/home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/model/MapFile.java
 /home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/model/Mapping.java
 /home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/model/ModelAndView.java
 /home/randylam/Documents/GitHub/Framework/framework/src/main/java/randy/framework/model/UrlKey.java

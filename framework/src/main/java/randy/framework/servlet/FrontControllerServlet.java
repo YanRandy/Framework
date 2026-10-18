@@ -11,6 +11,7 @@ import org.springframework.web.context.WebApplicationContext;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,11 +20,12 @@ import randy.framework.model.UrlKey;
 import randy.framework.util.RouteDebugger;
 import randy.framework.util.ViewRendererRegistry;
 
+@MultipartConfig(maxFileSize = 10 * 1024 * 1024, maxRequestSize = 20 * 1024 * 1024)
 public class FrontControllerServlet extends HttpServlet {
     private Map<UrlKey, Mapping> urlList = new HashMap<>();
     private ViewRendererRegistry registry;
     private ControllerExecServlet invoker;
-    private ResultHandlerServlet  resultHandler;
+    private ResultHandlerServlet resultHandler;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -31,30 +33,39 @@ public class FrontControllerServlet extends HttpServlet {
         ServletContext ctx = config.getServletContext();
 
         Exception err = (Exception) ctx.getAttribute("deploymentError");
-        if (err != null) throw new ServletException(err.getMessage(), err);
+        if (err != null)
+            throw new ServletException(err.getMessage(), err);
 
         Map<UrlKey, Mapping> load = (Map<UrlKey, Mapping>) ctx.getAttribute("urlList");
-        if (load == null) throw new ServletException("urlList introuvable !");
+        if (load == null)
+            throw new ServletException("urlList introuvable !");
         this.urlList = load;
 
         String prefix = (String) ctx.getAttribute("prefix");
         String suffix = (String) ctx.getAttribute("suffix");
-        this.registry      = new ViewRendererRegistry();
-        this.invoker       = new ControllerExecServlet();
+        this.registry = new ViewRendererRegistry();
+        this.invoker = new ControllerExecServlet();
         this.resultHandler = new ResultHandlerServlet(registry, prefix, suffix);
     }
 
-    @Override protected void doGet(HttpServletRequest req, HttpServletResponse res)
-            throws ServletException, IOException { processRequest(req, res); }
-    @Override protected void doPost(HttpServletRequest req, HttpServletResponse res)
-            throws ServletException, IOException { processRequest(req, res); }
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
+        processRequest(req, res);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
+        processRequest(req, res);
+    }
 
     private void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String pathInfo   = request.getRequestURI().substring(request.getContextPath().length());
+        String pathInfo = request.getRequestURI().substring(request.getContextPath().length());
         String httpMethod = request.getMethod();
-        UrlKey key        = new UrlKey(pathInfo, httpMethod);
+        UrlKey key = new UrlKey(pathInfo, httpMethod);
 
         ApplicationContext spring = (ApplicationContext) request.getServletContext()
                 .getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
@@ -66,11 +77,11 @@ public class FrontControllerServlet extends HttpServlet {
 
         Mapping map = urlList.get(key);
         try {
-            Class<?> clazz      = Class.forName(map.getClassName());
-            Object   instance   = clazz.getDeclaredConstructor().newInstance();
-            Method   method     = invoker.findMethod(clazz, map.getMethod());
-            Object   result     = invoker.invoke(method, instance, spring, request);
-            boolean  handled    = resultHandler.handle(method, result, request, response);
+            Class<?> clazz = Class.forName(map.getClassName());
+            Object instance = clazz.getDeclaredConstructor().newInstance();
+            Method method = invoker.findMethod(clazz, map.getMethod());
+            Object result = invoker.invoke(method, instance, spring, request);
+            boolean handled = resultHandler.handle(method, result, request, response);
 
             if (!handled) {
                 RouteDebugger.renderSuccess(pathInfo, httpMethod, map, result, response);
