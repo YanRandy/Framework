@@ -6,8 +6,8 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,6 +16,8 @@ import org.springframework.context.ApplicationContext;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
+import randy.framework.model.MapFile;
 
 public class BindingParameter {
 
@@ -30,9 +32,10 @@ public class BindingParameter {
                 case ARRAY -> bindArray(params[i], req);
                 case LIST -> bindList(params[i], req);
                 case MAP -> bindMap(params[i], req);
+                case FILE -> bindFile(params[i], req);
                 case OBJECT -> bindObject(
                         params[i].getType(),
-                        params[i].getName(),
+                        params.length == 1 ? "" : params[i].getName(),
                         req);
                 default -> throw new IllegalArgumentException(
                         "Type non supporté : " + params[i].getType());
@@ -80,7 +83,7 @@ public class BindingParameter {
                     continue; // on aura la gestion de bindList ici.
                 }
                 if (!visiting.contains(fieldType)) {
-                    Object nestedObj = bindObject(fieldType, key, req, visiting);
+                    Object nestedObj = bindObject(fieldType, key, req, new HashSet<>(visiting));
                     if (nestedObj != null) {
                         setters.invoke(instance, nestedObj);
                     }
@@ -113,10 +116,8 @@ public class BindingParameter {
     private Class<?> getInnerType(Type genericType) {
         if (genericType instanceof ParameterizedType pt) {
             return (Class<?>) pt.getActualTypeArguments()[0];
-            // List<String> → String.class
-            // List<Personne> → Personne.class
         }
-        return String.class; // fallback si pas de générique
+        return String.class;
     }
 
     private List<Object> bindList(Parameter param, HttpServletRequest req) throws Exception {
@@ -142,7 +143,7 @@ public class BindingParameter {
         if (genericType instanceof ParameterizedType pt) {
             return pt.getActualTypeArguments(); // → [String.class, String[].class]
         }
-        return new Type[] { String.class, String.class }; // fallback
+        return new Type[] { String.class, String.class };
     }
 
     private Object resolveMapValue(Class<?> valueType, String[] rawValues,
@@ -158,7 +159,6 @@ public class BindingParameter {
             return array;
         }
 
-        // Map<String, String> → première valeur seulement
         if (TypeResolver.isPrimitive(valueType)) {
             return convertValue(rawValues[0], valueType);
         }
@@ -169,14 +169,33 @@ public class BindingParameter {
     }
 
     private Object bindMap(Parameter param, HttpServletRequest req) throws Exception {
-    // fonction de test si bindObject ne va pas cycle sur lui meme pour toujours
         Type[] MapTypes = getMapTypeArgs(param.getParameterizedType());
         Class<?> keyType = (Class<?>) MapTypes[0];
         Class<?> valueType = (Class<?>) MapTypes[1];
 
-        // classic map of http
         Map<String, String[]> rawMap = req.getParameterMap();
-        Map<Object, Object> result = new HashMap<>();
+        Map<Object, Object> result = new LinkedHashMap<>();
+
+        if (valueType == MapFile.class) {
+            for (Part part : req.getParts()) {
+                String header = part.getHeader("content-disposition");
+                if (!header.contains("filename"))
+                    continue;
+
+                String fieldName = extractFilename(header, "name");
+                String filename = extractFilename(header, "filename");
+                String extension = extractExtension(filename);
+
+                byte[] raw = part.getInputStream().readAllBytes();
+                List<Byte> content = new ArrayList<>();
+                for (byte b : raw)
+                    content.add(b);
+
+                Object key = convertValue(fieldName, keyType);
+                result.put(key, new MapFile(filename, extension, content));
+            }
+            return result;
+        }
 
         for (Map.Entry<String, String[]> entry : rawMap.entrySet()) {
             Object key = convertValue(entry.getKey(), keyType);
@@ -186,21 +205,63 @@ public class BindingParameter {
         return result;
     }
 
-    private static Object convertValue(String value, Class<?> params) {
+    private MapFile bindFile(Parameter param, HttpServletRequest req) throws Exception {
+        Part part = req.getPart(param.getName());
+        if (part == null || part.getSize() == 0) {
+            return null;
+        }
+        String header = part.getHeader("content-disposition");
+        String filename = extractFilename(header, "filename");
+        String extension = extractExtension(filename);
+
+        byte[] raw = part.getInputStream().readAllBytes();
+        List<Byte> content = new ArrayList<>();
+        for (byte b : raw)
+            content.add(b);
+
+        return new MapFile(filename, extension, content);
+    }
+
+    private String extractExtension(String filename) {
+        if (filename == null || !filename.contains("."))
+            return "";
+        return filename.substring(filename.lastIndexOf(".") + 1);
+    }
+
+    private String extractFilename(String header, String key) {
+        if (header == null)
+            return "unknown";
+        for (String part : header.split(";")) {
+            String trimmed = part.trim();
+            if (trimmed.startsWith(key)) {
+                return trimmed.substring(trimmed.indexOf("=") + 1)
+                        .replace("\"", "").trim();
+            }
+        }
+        return "unknown";
+    }
+
+    public static Object convertValue(String value, Class<?> type) {
         if (value == null)
             return null;
-        if (params == String.class)
+        if (type == String.class)
             return value;
-        if (params == int.class || params == Integer.class)
+        if (type == int.class || type == Integer.class)
             return Integer.valueOf(value);
-        if (params == long.class || params == Long.class)
+        if (type == long.class || type == Long.class)
             return Long.valueOf(value);
-        if (params == float.class || params == Float.class)
+        if (type == float.class || type == Float.class)
             return Float.valueOf(value);
-        if (params == double.class || params == Double.class)
+        if (type == double.class || type == Double.class)
             return Double.valueOf(value);
-        if (params == boolean.class || params == Boolean.class)
+        if (type == boolean.class || type == Boolean.class)
             return Boolean.valueOf(value);
+        if (type == byte.class || type == Byte.class)
+            return Byte.valueOf(value);
+        if (type == char.class || type == Character.class)
+            return value.charAt(0);
+        if (type == short.class || type == Short.class)
+            return Short.valueOf(value);
         return null;
     }
 }

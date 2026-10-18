@@ -5,6 +5,7 @@ public class Personne {
     private String nom;
     private String prenom;
     private int age;
+    Personne ami;
 
     public Personne() {
     }
@@ -45,5 +46,13 @@ public class Personne {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    public Personne getAmi() {
+        return ami;
+    }
+
+    public void setAmi(Personne ami) {
+        this.ami = ami;
     }
 }

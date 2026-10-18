@@ -1,24 +1,13 @@
 package randy.framework.servlet;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.springframework.context.ApplicationContext;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import net.bytebuddy.implementation.bind.annotation.Empty;
 import randy.framework.binding.BindingParameter;
-import randy.framework.binding.TypeResolver;
 
 public class ControllerExecServlet {
     private final BindingParameter bind = new BindingParameter();
