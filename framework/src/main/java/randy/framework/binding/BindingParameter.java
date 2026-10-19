@@ -18,6 +18,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 import randy.framework.model.MapFile;
+import randy.framework.model.RSession;
 
 public class BindingParameter {
 
@@ -26,6 +27,7 @@ public class BindingParameter {
         for (int i = 0; i < params.length; i++) {
             args[i] = switch (TypeResolver.resolve(params[i])) {
                 case APPLICATION_CONTEXT -> ctx;
+                case SESSION -> buildSession(req);
                 case PRIMITIVE -> convertValue(
                         req.getParameter(params[i].getName()),
                         params[i].getType());
@@ -42,6 +44,12 @@ public class BindingParameter {
             };
         }
         return args;
+    }
+
+    private RSession buildSession(HttpServletRequest req) {
+        RSession session = new RSession(req.getSession());
+        session.loadAll();
+        return session;
     }
 
     // fonction de test si bindObject ne va pas cycle sur lui meme pour toujours
