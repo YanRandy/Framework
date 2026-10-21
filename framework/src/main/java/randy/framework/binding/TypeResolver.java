@@ -7,10 +7,11 @@ import java.util.Map;
 import org.springframework.context.ApplicationContext;
 
 import randy.framework.model.MapFile;
+import randy.framework.model.RSession;
 
 public class TypeResolver {
     public enum Kind {
-        PRIMITIVE, OBJECT, LIST, APPLICATION_CONTEXT, ARRAY, MAP, FILE, UNKNOWN
+        PRIMITIVE, OBJECT, LIST, APPLICATION_CONTEXT, ARRAY, MAP, FILE, SESSION, UNKNOWN
     }
 
     public static Kind resolve(Parameter param) {
@@ -22,6 +23,8 @@ public class TypeResolver {
             return Kind.PRIMITIVE;
         if (type.isArray())
             return Kind.ARRAY;
+        if (type == RSession.class)
+            return Kind.SESSION;
         if (List.class.isAssignableFrom(type))
             return Kind.LIST;
         if (type == MapFile.class)
