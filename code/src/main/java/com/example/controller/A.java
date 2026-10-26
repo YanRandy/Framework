@@ -1,8 +1,8 @@
 package com.example.controller;
 
-import randy.framework.annotation.Controller;
+import randy.framework.annotation.RController;
 
-@Controller     //annotation
+@RController     //annotation
 public class A {
     
 }

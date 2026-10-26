@@ -1,10 +1,10 @@
 package com.example.controller;
-import randy.framework.annotation.Controller;
-import randy.framework.annotation.UrlMapping;
+import randy.framework.annotation.RController;
+import randy.framework.annotation.RUrlMapping;
 
-@Controller    //annotation
+@RController    //annotation
 public class C {
-    @UrlMapping("/oily")
+    @RUrlMapping("/oily")
     public void afficherOily() {
     }
 
