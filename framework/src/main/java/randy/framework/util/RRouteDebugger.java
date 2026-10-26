@@ -6,13 +6,13 @@ import java.io.StringWriter;
 import java.util.Map;
 
 import jakarta.servlet.http.HttpServletResponse;
-import randy.framework.model.Mapping;
-import randy.framework.model.UrlKey;
+import randy.framework.model.RMapping;
+import randy.framework.model.RUrlKey;
 
-public class RouteDebugger {
+public class RRouteDebugger {
 
     public static void renderNotFound(String pathInfo, String httpMethod,
-            Map<UrlKey, Mapping> urlList, HttpServletResponse response) throws IOException {
+            Map<RUrlKey, RMapping> urlList, HttpServletResponse response) throws IOException {
         StringBuilder buf = new StringBuilder();
         buf.append("<html>");
         buf.append("<head><title>Front Controller - Routage</title></head>");
@@ -33,7 +33,7 @@ public class RouteDebugger {
 
         boolean hasSuggestions = false;
         if (urlList != null && !urlList.isEmpty()) {
-            for (Map.Entry<UrlKey, Mapping> entry : urlList.entrySet()) {
+            for (Map.Entry<RUrlKey, RMapping> entry : urlList.entrySet()) {
                 String availableRoute = entry.getKey().getUrl();
                 if (availableRoute.startsWith(pathInfo)) {
                     hasSuggestions = true;
@@ -48,7 +48,7 @@ public class RouteDebugger {
             buf.append("</td></tr>");
 
             if (urlList != null) {
-                for (Map.Entry<UrlKey, Mapping> entry : urlList.entrySet()) {
+                for (Map.Entry<RUrlKey, RMapping> entry : urlList.entrySet()) {
                     appendRouteRow(buf, entry.getKey(), entry.getValue());
                 }
             }
@@ -63,7 +63,7 @@ public class RouteDebugger {
     }
 
     public static void renderSuccess(String pathInfo, String httpMethod,
-            Mapping map, Object result, HttpServletResponse response) throws IOException {
+            RMapping map, Object result, HttpServletResponse response) throws IOException {
         StringBuilder buf = new StringBuilder();
         buf.append("<html><head><title>Front Controller - Succès</title></head>");
         buf.append("<body style='font-family: Arial, sans-serif; margin: 40px;'>");
@@ -87,7 +87,7 @@ public class RouteDebugger {
     }
 
     public static void renderError(String pathInfo, String httpMethod,
-            Mapping map, Exception e, HttpServletResponse response) throws IOException {
+            RMapping map, Exception e, HttpServletResponse response) throws IOException {
         StringBuilder buf = new StringBuilder();
         buf.append("<html><head><title>Front Controller - Erreur</title></head>");
         buf.append("<body style='font-family: Arial, sans-serif; margin: 40px;'>");
@@ -111,7 +111,7 @@ public class RouteDebugger {
         response.getWriter().print(buf);
     }
 
-    private static void appendRouteRow(StringBuilder buf, UrlKey key, Mapping map) {
+    private static void appendRouteRow(StringBuilder buf, RUrlKey key, RMapping map) {
         buf.append("<tr>");
         buf.append("<td><span style='background: #e5e7eb; padding: 3px 8px; border-radius: 4px; font-weight: bold;'>")
                 .append(key.getHttpMethod()).append("</span></td>");

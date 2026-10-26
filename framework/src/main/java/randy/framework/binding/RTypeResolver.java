@@ -6,10 +6,10 @@ import java.util.Map;
 
 import org.springframework.context.ApplicationContext;
 
-import randy.framework.model.MapFile;
+import randy.framework.model.RMapFile;
 import randy.framework.model.RSession;
 
-public class TypeResolver {
+public class RTypeResolver {
     public enum Kind {
         PRIMITIVE, OBJECT, LIST, APPLICATION_CONTEXT, ARRAY, MAP, FILE, SESSION, UNKNOWN
     }
@@ -27,7 +27,7 @@ public class TypeResolver {
             return Kind.SESSION;
         if (List.class.isAssignableFrom(type))
             return Kind.LIST;
-        if (type == MapFile.class)
+        if (type == RMapFile.class)
             return Kind.FILE;
         if (Map.class.isAssignableFrom(type))
             return Kind.MAP;

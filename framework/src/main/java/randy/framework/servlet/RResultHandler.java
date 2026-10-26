@@ -7,18 +7,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import randy.framework.annotation.RestApi;
-import randy.framework.helper.ViewRenderer;
-import randy.framework.model.ModelAndView;
-import randy.framework.util.ViewRendererRegistry;
+import randy.framework.annotation.RRestApi;
+import randy.framework.helper.RViewRenderer;
+import randy.framework.model.RModelAndView;
+import randy.framework.util.RViewRegistry;
 
-public class ResultHandlerServlet {
-    private final ViewRendererRegistry registry;
+public class RResultHandler {
+    private final RViewRegistry registry;
     private final String prefix;
     private final String suffix;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public ResultHandlerServlet(ViewRendererRegistry registry, String prefix, String suffix) {
+    public RResultHandler(RViewRegistry registry, String prefix, String suffix) {
         this.registry = registry;
         this.prefix = prefix;
         this.suffix = suffix;
@@ -30,14 +30,14 @@ public class ResultHandlerServlet {
             throws Exception {
 
         // @RestApi → JSON
-        if (method.isAnnotationPresent(RestApi.class)) {
+        if (method.isAnnotationPresent(RRestApi.class)) {
             res.setContentType("application/json;charset=UTF-8");
             res.getWriter().print(toJson(result));
             return true;
         }
 
         // ModelAndView → vue + modèle
-        if (result instanceof ModelAndView mv) {
+        if (result instanceof RModelAndView mv) {
             mv.getModel().forEach(req::setAttribute);
             renderView(mv.getView(), req, res);
             return true;
@@ -55,7 +55,7 @@ public class ResultHandlerServlet {
     private void renderView(String viewName, HttpServletRequest req, HttpServletResponse res)
             throws Exception {
         String path = prefix + viewName + suffix;
-        ViewRenderer renderer = registry.get(suffix);
+        RViewRenderer renderer = registry.get(suffix);
         if (renderer == null) throw new ServletException("Aucun renderer pour : " + suffix);
         renderer.render(req, res, path);
     }

@@ -7,10 +7,10 @@ import org.springframework.context.ApplicationContext;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import randy.framework.binding.BindingParameter;
+import randy.framework.binding.RBindingParameter;
 
-public class ControllerExecServlet {
-    private final BindingParameter bind = new BindingParameter();
+public class RControllerExec {
+    private final RBindingParameter bind = new RBindingParameter();
 
     public Method findMethod(Class<?> clazz, String methodName) throws ServletException {
         for (Method m : clazz.getDeclaredMethods()) {

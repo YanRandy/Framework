@@ -6,11 +6,11 @@ import java.util.Map;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
-import randy.framework.model.Mapping;
-import randy.framework.model.UrlKey;
-import randy.framework.util.Utilitaire;
+import randy.framework.model.RMapping;
+import randy.framework.model.RUrlKey;
+import randy.framework.util.RAnnotationHandler;
 
-public class InitListener implements ServletContextListener {
+public class RInitListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext context = sce.getServletContext();
@@ -19,8 +19,8 @@ public class InitListener implements ServletContextListener {
         String suffix = context.getInitParameter("suffix");
         System.out.println("[FRAMEWORK] Initialisation au déploiement de l'application...");
         try {
-            Map<UrlKey, Mapping> urlList = new HashMap<>();
-            Utilitaire.scanPaths(packageToScan, urlList);
+            Map<RUrlKey, RMapping> urlList = new HashMap<>();
+            RAnnotationHandler.scanPaths(packageToScan, urlList);
             context.setAttribute("urlList", urlList);
             context.setAttribute("prefix", prefix);
             context.setAttribute("suffix", suffix);

@@ -7,8 +7,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 // @Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
-@Target({ElementType.METHOD})
+@Target({ElementType.TYPE})
 
-public @interface RestApi {
-    
+public @interface RController {
+    // String[] value() default {};
 }

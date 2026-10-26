@@ -2,12 +2,12 @@ package randy.framework.model;
 
 import java.util.List;
 
-public class MapFile {
+public class RMapFile {
     public String filename;
     public String extension;
     public List<Byte> file;
 
-    public MapFile(String filename, String extension, List<Byte> file) {
+    public RMapFile(String filename, String extension, List<Byte> file) {
         this.filename = filename;
         this.extension = extension;
         this.file = file;

@@ -2,7 +2,7 @@ package randy.framework.model;
 
 import java.util.Objects;
 
-public class UrlKey {
+public class RUrlKey {
     public String url;
     public String httpMethod;
 
@@ -22,7 +22,7 @@ public class UrlKey {
         this.httpMethod = httpMethod;
     }
 
-    public UrlKey(String url, String httpMethod) {
+    public RUrlKey(String url, String httpMethod) {
         this.url = url;
         this.httpMethod = httpMethod.toUpperCase();
     }
@@ -33,7 +33,7 @@ public class UrlKey {
             return true;
         if (obj == null || getClass() != obj.getClass())
             return false;
-        UrlKey urlKey = (UrlKey) obj;
+        RUrlKey urlKey = (RUrlKey) obj;
         return url.equals(urlKey.url) && httpMethod.equals(urlKey.httpMethod);
     }
 

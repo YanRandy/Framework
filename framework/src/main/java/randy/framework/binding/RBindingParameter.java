@@ -17,15 +17,15 @@ import org.springframework.context.ApplicationContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
-import randy.framework.model.MapFile;
+import randy.framework.model.RMapFile;
 import randy.framework.model.RSession;
 
-public class BindingParameter {
+public class RBindingParameter {
 
     public Object[] bindAll(Parameter[] params, ApplicationContext ctx, HttpServletRequest req) throws Exception {
         Object[] args = new Object[params.length];
         for (int i = 0; i < params.length; i++) {
-            args[i] = switch (TypeResolver.resolve(params[i])) {
+            args[i] = switch (RTypeResolver.resolve(params[i])) {
                 case APPLICATION_CONTEXT -> ctx;
                 case SESSION -> buildSession(req);
                 case PRIMITIVE -> convertValue(
@@ -75,7 +75,7 @@ public class BindingParameter {
             String key = prefix.isEmpty() ? fieldName : prefix + "." + fieldName;
             // String value = req.getParameter(fieldName);
             Class<?> fieldType = setters.getParameterTypes()[0];
-            if (TypeResolver.isPrimitive(fieldType)) {
+            if (RTypeResolver.isPrimitive(fieldType)) {
                 String value = req.getParameter(key);
 
                 if (value == null)
@@ -111,7 +111,7 @@ public class BindingParameter {
         Class<?> componentType = param.getType().getComponentType();
         Object array = Array.newInstance(componentType, values.length);
         for (int i = 0; i < values.length; i++) {
-            if (TypeResolver.isPrimitive(componentType)) {
+            if (RTypeResolver.isPrimitive(componentType)) {
                 Array.set(array, i, convertValue(values[i], componentType));
             } else {
                 String prefix = param.getName() + "[" + i + "]";
@@ -136,7 +136,7 @@ public class BindingParameter {
         List<Object> list = new ArrayList<>();
         for (int i = 0; i < values.length; i++) {
             String value = values[i];
-            if (TypeResolver.isPrimitive(innerType)) {
+            if (RTypeResolver.isPrimitive(innerType)) {
                 list.add(convertValue(value, innerType));
             } else {
                 String prefix = param.getName() + "[" + i + "]";
@@ -167,7 +167,7 @@ public class BindingParameter {
             return array;
         }
 
-        if (TypeResolver.isPrimitive(valueType)) {
+        if (RTypeResolver.isPrimitive(valueType)) {
             return convertValue(rawValues[0], valueType);
         }
 
@@ -184,7 +184,7 @@ public class BindingParameter {
         Map<String, String[]> rawMap = req.getParameterMap();
         Map<Object, Object> result = new LinkedHashMap<>();
 
-        if (valueType == MapFile.class) {
+        if (valueType == RMapFile.class) {
             for (Part part : req.getParts()) {
                 String header = part.getHeader("content-disposition");
                 if (!header.contains("filename"))
@@ -200,7 +200,7 @@ public class BindingParameter {
                     content.add(b);
 
                 Object key = convertValue(fieldName, keyType);
-                result.put(key, new MapFile(filename, extension, content));
+                result.put(key, new RMapFile(filename, extension, content));
             }
             return result;
         }
@@ -213,7 +213,7 @@ public class BindingParameter {
         return result;
     }
 
-    private MapFile bindFile(Parameter param, HttpServletRequest req) throws Exception {
+    private RMapFile bindFile(Parameter param, HttpServletRequest req) throws Exception {
         Part part = req.getPart(param.getName());
         if (part == null || part.getSize() == 0) {
             return null;
@@ -227,7 +227,7 @@ public class BindingParameter {
         for (byte b : raw)
             content.add(b);
 
-        return new MapFile(filename, extension, content);
+        return new RMapFile(filename, extension, content);
     }
 
     private String extractExtension(String filename) {

@@ -7,9 +7,9 @@ import java.util.Enumeration;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import randy.framework.helper.ViewRenderer;
+import randy.framework.helper.RViewRenderer;
 
-public class HtmlViewRenderer implements ViewRenderer {
+public class RHtmlViewRenderer implements RViewRenderer {
     @Override
     public void render(HttpServletRequest request, HttpServletResponse response, String viewPath)
             throws IOException {

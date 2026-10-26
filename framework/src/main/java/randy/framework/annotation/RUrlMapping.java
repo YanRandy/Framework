@@ -7,8 +7,9 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 // @Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
-@Target({ElementType.TYPE})
+@Target({ElementType.METHOD})
 
-public @interface Controller {
-    // String[] value() default {};
+public @interface RUrlMapping {
+    String value();
+    String[] method() default {"GET", "POST"};
 }

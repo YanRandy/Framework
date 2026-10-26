@@ -3,16 +3,16 @@ package randy.framework.model;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ModelAndView {
+public class RModelAndView {
     private String view;
     private Map<String, Object[]> model;
 
-    public ModelAndView(String view) {
+    public RModelAndView(String view) {
         this.view = view;
         this.model = new HashMap<>();
     }
 
-    public ModelAndView() {
+    public RModelAndView() {
         this.model = new HashMap<>();
     }
 

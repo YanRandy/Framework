@@ -5,9 +5,9 @@ import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import randy.framework.helper.ViewRenderer;
+import randy.framework.helper.RViewRenderer;
 
-public class JspViewRenderer implements ViewRenderer {
+public class RJspViewRenderer implements RViewRenderer {
     @Override
     public void render(HttpServletRequest request, HttpServletResponse response, String viewPath)
             throws ServletException, IOException {
