@@ -1,0 +1,16 @@
+# Build Maven (regénéré par mvn package)
+target/
+
+# Binaires compilés et archives
+*.class
+*.jar
+*.war
+*.zip
+
+# Cookies des tests curl (voir framework/TodoList.md)
+c.txt
+
+# IDE / OS
+.idea/
+*.iml
+.DS_Store

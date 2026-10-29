@@ -21,6 +21,12 @@ import randy.framework.model.RUrlKey;
 import randy.framework.util.RRouteDebugger;
 import randy.framework.util.RViewRegistry;
 
+/**
+ * Servlet unique de l'application (mappée sur "/") : toutes les requêtes passent ici.
+ * Pour chaque requête : trouve la route → vérifie l'auth → instancie le controller
+ * → binde les paramètres et appelle la méthode → transforme le résultat en réponse.
+ * @MultipartConfig permet de recevoir des fichiers (RMapFile).
+ */
 @MultipartConfig(maxFileSize = 10 * 1024 * 1024, maxRequestSize = 20 * 1024 * 1024)
 public class RFrontController extends HttpServlet {
     private Map<RUrlKey, RMapping> urlList = new HashMap<>();
@@ -29,6 +35,10 @@ public class RFrontController extends HttpServlet {
     private RResultHandler resultHandler;
     private RAuthSecurity authSecurity;
 
+    /**
+     * Récupère ce que RInitListener a préparé et crée les objets réutilisés à chaque requête.
+     * Si le scan a échoué (doublon d'URL), on relance l'erreur : l'application ne démarre pas.
+     */
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -66,6 +76,10 @@ public class RFrontController extends HttpServlet {
         processRequest(req, res);
     }
 
+    /**
+     * Cœur du framework. L'URL utilisée est celle sans le contexte
+     * (ex : /code-test/livres → /livres), combinée au verbe HTTP pour former la clé.
+     */
     private void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -100,6 +114,7 @@ public class RFrontController extends HttpServlet {
         }
     }
 
+    /** Lit un context-param du web.xml, ou retourne la valeur par défaut s'il est absent/vide. */
     public static String param(ServletContext ctx, String name, String def) {
         String v = ctx.getInitParameter(name);
         return (v == null || v.isBlank()) ? def : v;

@@ -5,6 +5,10 @@ import java.util.Map;
 
 import randy.framework.helper.RViewRenderer;
 
+/**
+ * Associe un suffix de vue (".jsp", ".html"...) au renderer qui sait l'afficher.
+ * register() permet d'ajouter un nouveau type de vue sans toucher au framework.
+ */
 public class RViewRegistry {
     private static final Map<String, RViewRenderer> render = new HashMap<>();
     

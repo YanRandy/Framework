@@ -9,6 +9,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import randy.framework.model.RMapping;
 import randy.framework.model.RUrlKey;
 
+/**
+ * Pages HTML de debug générées par le framework :
+ *  - renderNotFound : route inconnue → liste des routes proches (ou toutes)
+ *  - renderSuccess  : méthode exécutée sans vue à afficher (void, Object...)
+ *  - renderError    : exception pendant l'exécution → stack trace
+ */
 public class RRouteDebugger {
 
     public static void renderNotFound(String pathInfo, String httpMethod,

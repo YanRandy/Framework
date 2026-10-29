@@ -3,6 +3,10 @@ package randy.framework.model;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Retour d'un controller qui veut afficher une vue avec des données.
+ * Chaque entrée du modèle devient un attribut de requête utilisable dans la JSP (${cle}).
+ */
 public class RModelAndView {
     private String view;
     private Map<String, Object[]> model;

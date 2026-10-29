@@ -10,6 +10,12 @@ import randy.framework.model.RMapping;
 import randy.framework.model.RUrlKey;
 import randy.framework.util.RAnnotationHandler;
 
+/**
+ * Lancé une seule fois au déploiement de l'application (avant toute requête).
+ * Scanne les controllers, construit la table des routes et la range dans le ServletContext
+ * ("urlList", "prefix", "suffix") pour que le RFrontController la récupère dans init().
+ * Une erreur de routage (URL en double) est stockée dans "deploymentError" pour bloquer le démarrage.
+ */
 public class RInitListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent sce) {

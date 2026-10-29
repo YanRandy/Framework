@@ -7,6 +7,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import randy.framework.helper.RViewRenderer;
 
+/**
+ * Rendu JSP : forward vers le fichier, qui lit les attributs de requête en EL/JSTL.
+ */
 public class RJspViewRenderer implements RViewRenderer {
     @Override
     public void render(HttpServletRequest request, HttpServletResponse response, String viewPath)

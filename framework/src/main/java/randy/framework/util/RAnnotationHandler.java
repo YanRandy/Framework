@@ -19,10 +19,12 @@ public class RAnnotationHandler {
      * Scanne un package et retourne la liste des noms de classes annotées par @Controller et @UrlMapping
      * On met en <Urlkey, Mapping> pour que le code applique UrlKey comme une classe cle pour le hashmap
      * et ces fonctions
+     * Les infos @RAuthenticated (méthode, sinon classe) et @RRestApi sont lues ici une seule fois,
+     * puis gardées dans le RMapping pour ne pas refaire de réflexion à chaque requête.
      */
     public static void scanPaths(String packageToScan, Map<RUrlKey, RMapping> map) {
         ClassGraph cg = new ClassGraph().enableClassInfo().enableAnnotationInfo();
-        
+
         if (packageToScan != null && !packageToScan.isBlank()) {
             cg.acceptPackages(packageToScan);
         }
@@ -38,7 +40,7 @@ public class RAnnotationHandler {
                     for (Method method : methods) {
                         if (method.isAnnotationPresent(RUrlMapping.class)) {
                             RUrlMapping urlMapping = method.getAnnotation(RUrlMapping.class);
-                            RAuthenticated auth = RAuthSecurity.resolveAuth(clazz, null);
+                            RAuthenticated auth = RAuthSecurity.resolveAuth(clazz, method);
                             boolean authRequired = auth != null;
                             List<String> roles = authRequired ? List.of(auth.roles()) : List.of();
                             boolean restApi = method.isAnnotationPresent(RRestApi.class);
@@ -48,8 +50,8 @@ public class RAnnotationHandler {
                                 // generalisation - doublon url
                             if (map.containsKey(key)) {
                                 RMapping conflit = map.get(key);
-                                throw new IllegalStateException("Erreur critique de routage : L'URL '" + key.getUrl() + 
-                                    "' est déjà associée à " + conflit.getClassName() + "." + conflit.getMethod() + 
+                                throw new IllegalStateException("Erreur critique de routage : L'URL '" + key.getUrl() +
+                                    "' est déjà associée à " + conflit.getClassName() + "." + conflit.getMethod() +
                                     "(). Conflit avec " + className + "." + method.getName() + "()");
                             }
                             map.put(key, new RMapping(className, method.getName(), authRequired, roles, restApi));

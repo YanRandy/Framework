@@ -2,6 +2,11 @@ package randy.framework.model;
 
 import java.util.List;
 
+/**
+ * Ce qu'il faut savoir pour exécuter une route : classe + nom de méthode,
+ * plus les infos lues au démarrage (auth requise, rôles, JSON ou non).
+ * Valeur de la table des routes {@code Map<RUrlKey, RMapping>}.
+ */
 public class RMapping {
     private String className;
     private String method;

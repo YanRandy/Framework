@@ -2,6 +2,11 @@ package randy.framework.model;
 
 import java.util.Objects;
 
+/**
+ * Clé de la table des routes : URL + verbe HTTP.
+ * equals/hashCode sont redéfinis pour que deux clés identiques tombent sur la même entrée de la HashMap.
+ * Le verbe est mis en majuscules pour que "get" et "GET" soient équivalents.
+ */
 public class RUrlKey {
     public String url;
     public String httpMethod;

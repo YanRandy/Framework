@@ -9,11 +9,16 @@ import org.springframework.context.ApplicationContext;
 import randy.framework.model.RMapFile;
 import randy.framework.model.RSession;
 
+/**
+ * Classe chaque paramètre de méthode dans une catégorie (Kind) pour que
+ * RBindingParameter sache comment le remplir depuis la requête.
+ */
 public class RTypeResolver {
     public enum Kind {
         PRIMITIVE, OBJECT, LIST, APPLICATION_CONTEXT, ARRAY, MAP, FILE, SESSION, UNKNOWN
     }
 
+    /** L'ordre des tests compte : par ex. String est "primitif" avant d'être un objet. */
     public static Kind resolve(Parameter param) {
         Class<?> type = param.getType();
 
@@ -34,6 +39,7 @@ public class RTypeResolver {
         return Kind.OBJECT;
     }
 
+    /** Types convertibles directement depuis une String de la requête (int, Integer, String...). */
     public static boolean isPrimitive(Class<?> type) {
         return type.isPrimitive()
                 || type == String.class

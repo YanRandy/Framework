@@ -12,6 +12,13 @@ import randy.framework.helper.RViewRenderer;
 import randy.framework.model.RModelAndView;
 import randy.framework.util.RViewRegistry;
 
+/**
+ * Transforme la valeur retournée par le controller en réponse HTTP :
+ *  - @RRestApi      → JSON
+ *  - RModelAndView  → attributs du modèle mis dans la requête + rendu de la vue
+ *  - String         → nom de vue
+ *  - autre / void   → non géré ici (le front controller affiche la page debug)
+ */
 public class RResultHandler {
     private final RViewRegistry registry;
     private final String prefix;
@@ -52,6 +59,7 @@ public class RResultHandler {
         return false; // void ou autre → debug page
     }
 
+    /** Chemin final = prefix + nom de vue + suffix ; le renderer est choisi selon le suffix. */
     private void renderView(String viewName, HttpServletRequest req, HttpServletResponse res)
             throws Exception {
         String path = prefix + viewName + suffix;
@@ -60,6 +68,7 @@ public class RResultHandler {
         renderer.render(req, res, path);
     }
 
+    /** Une String est entourée de guillemets à la main ; le reste passe par Jackson. */
     private String toJson(Object obj) throws Exception {
         if (obj instanceof String s) return "\"" + s + "\"";
         return mapper.writeValueAsString(obj);

@@ -9,6 +9,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import randy.framework.helper.RViewRenderer;
 
+/**
+ * Rendu HTML statique : lit le fichier et remplace chaque {cle} par l'attribut de requête du même nom.
+ * Un attribut de type tableau est affiché en liste <ul><li>.
+ */
 public class RHtmlViewRenderer implements RViewRenderer {
     @Override
     public void render(HttpServletRequest request, HttpServletResponse response, String viewPath)

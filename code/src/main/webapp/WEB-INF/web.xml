@@ -5,11 +5,13 @@
                              https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
          version="5.0">
 
+    <!-- Package scanné au démarrage pour trouver les classes @RController -->
     <context-param>
         <param-name>packageToScan</param-name>
         <param-value>com.example</param-value>
     </context-param>
 
+    <!-- Vue = prefix + nom retourné par le controller + suffix (ex : /WEB-INF/views/accueil.jsp) -->
     <context-param>
         <param-name>prefix</param-name>
         <param-value>/WEB-INF/views/</param-value>
@@ -20,11 +22,16 @@
         <param-value>.jsp</param-value>
     </context-param>
 
+    <!-- Configuration Spring (services, repositories, DataSource) -->
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>/WEB-INF/applicationContext.xml</param-value>
     </context-param>
 
+    <!-- Sprint 10 / 10-bis : clés de session lues par @RAuthenticated
+         authUserKey : attribut présent = utilisateur connecté
+         authRoleKey : attribut contenant le ou les rôles (String, tableau ou Collection)
+         loginUrl    : redirection d'une page protégée si non connecté (les @RRestApi reçoivent un 401 JSON) -->
     <context-param>
         <param-name>authUserKey</param-name>
         <param-value>user</param-value>
@@ -38,17 +45,20 @@
         <param-value>/login</param-value>
     </context-param>
 
+    <!-- 1. Spring crée ses beans et publie l'ApplicationContext -->
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
-    
+
+    <!-- 2. Le framework scanne les controllers et construit la table des routes -->
     <listener>
         <listener-class>randy.framework.listener.RInitListener</listener-class>
     </listener>
 
+    <!-- Point d'entrée unique : toutes les requêtes passent par le RFrontController -->
     <servlet>
         <servlet-name>FrontController</servlet-name>
-        <servlet-class>randy.framework.servlet.RFrontControllerServlet</servlet-class>
+        <servlet-class>randy.framework.servlet.RFrontController</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
 

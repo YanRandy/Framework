@@ -2,6 +2,10 @@ package randy.framework.model;
 
 import java.util.List;
 
+/**
+ * Fichier uploadé : nom d'origine, extension et contenu en octets.
+ * Déclarer un paramètre RMapFile (ou Map<String, RMapFile>) suffit pour le recevoir.
+ */
 public class RMapFile {
     public String filename;
     public String extension;

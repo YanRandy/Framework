@@ -20,8 +20,17 @@ import jakarta.servlet.http.Part;
 import randy.framework.model.RMapFile;
 import randy.framework.model.RSession;
 
+/**
+ * Construit les arguments d'une méthode de controller à partir de la requête HTTP.
+ * Les noms des paramètres Java servent de noms de paramètres HTTP :
+ * il faut compiler avec l'option -parameters (configurée dans les pom.xml).
+ */
 public class RBindingParameter {
 
+    /**
+     * Un argument par paramètre, selon son Kind.
+     * Objet seul → pas de préfixe (?nom=..) ; plusieurs paramètres → préfixe par nom (?personne.nom=..).
+     */
     public Object[] bindAll(Parameter[] params, ApplicationContext ctx, HttpServletRequest req) throws Exception {
         Object[] args = new Object[params.length];
         for (int i = 0; i < params.length; i++) {
@@ -46,6 +55,7 @@ public class RBindingParameter {
         return args;
     }
 
+    /** Sprint 9 : enveloppe la HttpSession (créée si besoin) et pré-charge son contenu dans le cache. */
     private RSession buildSession(HttpServletRequest req) {
         RSession session = new RSession(req.getSession());
         session.loadAll();
@@ -57,6 +67,11 @@ public class RBindingParameter {
         return bindObject(type, prefix, req, new HashSet<Class<?>>());
     }
 
+    /**
+     * Instancie l'objet puis appelle chaque setter avec le paramètre du même nom (préfixé si besoin).
+     * Les objets imbriqués sont remplis récursivement (ami.nom). "visiting" garde les types en cours
+     * pour couper une boucle infinie (Personne qui contient une Personne).
+     */
     private Object bindObject(Class<?> type, String prefix, HttpServletRequest req, Set<Class<?>> visiting)
             throws Exception {
         if (!visiting.add(type)) {
@@ -103,6 +118,7 @@ public class RBindingParameter {
         return instance;
     }
 
+    /** ?tags=a&tags=b → tableau ; pour un tableau d'objets, chaque case lit tags[i].champ. */
     private Object bindArray(Parameter param, HttpServletRequest req) throws Exception {
         String values[] = req.getParameterValues(param.getName());
         if (values == null)
@@ -121,6 +137,7 @@ public class RBindingParameter {
         return array;
     }
 
+    /** Lit T dans List<T> (String par défaut si la liste n'est pas typée). */
     private Class<?> getInnerType(Type genericType) {
         if (genericType instanceof ParameterizedType pt) {
             return (Class<?>) pt.getActualTypeArguments()[0];
@@ -128,6 +145,7 @@ public class RBindingParameter {
         return String.class;
     }
 
+    /** Même logique que bindArray, mais retourne une List (vide plutôt que null). */
     private List<Object> bindList(Parameter param, HttpServletRequest req) throws Exception {
         String values[] = req.getParameterValues(param.getName());
         if (values == null)
@@ -176,6 +194,10 @@ public class RBindingParameter {
         return bindObject(valueType, key, req);
     }
 
+    /**
+     * Map<K, V> : tous les paramètres de la requête.
+     * Si V est RMapFile, ce sont les fichiers uploadés (clé = nom du champ du formulaire).
+     */
     private Object bindMap(Parameter param, HttpServletRequest req) throws Exception {
         Type[] MapTypes = getMapTypeArgs(param.getParameterizedType());
         Class<?> keyType = (Class<?>) MapTypes[0];
@@ -213,6 +235,7 @@ public class RBindingParameter {
         return result;
     }
 
+    /** Fichier uploadé (multipart) dont le champ porte le nom du paramètre → RMapFile, ou null. */
     private RMapFile bindFile(Parameter param, HttpServletRequest req) throws Exception {
         Part part = req.getPart(param.getName());
         if (part == null || part.getSize() == 0) {
@@ -236,6 +259,7 @@ public class RBindingParameter {
         return filename.substring(filename.lastIndexOf(".") + 1);
     }
 
+    /** Lit une valeur (name ou filename) dans l'en-tête content-disposition d'un Part. */
     private String extractFilename(String header, String key) {
         if (header == null)
             return "unknown";
@@ -249,6 +273,7 @@ public class RBindingParameter {
         return "unknown";
     }
 
+    /** Convertit la String reçue vers le type Java attendu (null si absente ou type inconnu). */
     public static Object convertValue(String value, Class<?> type) {
         if (value == null)
             return null;

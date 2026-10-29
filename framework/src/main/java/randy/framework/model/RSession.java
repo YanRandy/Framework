@@ -7,6 +7,11 @@ import java.util.Map;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
+/**
+ * Sprint 9 : surcouche simple de HttpSession, injectée en déclarant un paramètre RSession.
+ * Garde une copie locale (cache) : set() écrit dans les deux, get() lit le cache en premier.
+ * Écrire directement dans getCache() ne touche pas la vraie session tant qu'on n'appelle pas flush().
+ */
 public class RSession {
     private final HttpSession httpSession;
     private final Map<String, Object> cache;
@@ -84,6 +89,7 @@ public class RSession {
         httpSession.invalidate();
     }
 
+    /** Nouvelle session avec le même contenu (utile après un login pour changer l'identifiant). */
     public void regenerateId(HttpServletRequest req) {
         Map<String, Object> attrs = getAll();
         cache.clear();
@@ -112,6 +118,7 @@ public class RSession {
         httpSession.setMaxInactiveInterval(seconds);
     }
 
+    /** Accès à la HttpSession d'origine si une fonction n'est pas couverte par RSession. */
     public HttpSession raw() {
         return httpSession;
     }
