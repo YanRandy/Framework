@@ -1,0 +1,102 @@
+package com.example.controller;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import randy.framework.annotation.RAuthenticated;
+import randy.framework.annotation.RController;
+import randy.framework.annotation.RRestApi;
+import randy.framework.annotation.RUrlMapping;
+import randy.framework.model.RSession;
+
+/**
+ * Sprint 10 / 10-bis — authentification et rôles avec @RAuthenticated sur les MÉTHODES.
+ *
+ *   Pas d'annotation                     → public
+ *   @RAuthenticated                      → auth simple : il faut être connecté
+ *   @RAuthenticated(roles = {"ADMIN"})   → auth complexe : connecté ET un des rôles
+ *
+ * Les clés de session "user" et "role" doivent être les mêmes que les
+ * context-param authUserKey / authRoleKey du web.xml.
+ * Mot de passe codé en dur (1234) : pour les tests uniquement.
+ */
+@RController
+public class RAuthController {
+
+    /** Cible de la redirection des pages non connectées (context-param loginUrl = /login). */
+    @RRestApi
+    @RUrlMapping(value = "/login", method = "GET")
+    public Object loginPage() {
+        return Map.of("message",
+                "Non connecté. POST /sprint/auth/login avec username, password (1234) et role.");
+    }
+
+    /** "Connexion" = poser user et role dans la session. C'est tout ce que le framework vérifie. */
+    @RRestApi
+    @RUrlMapping(value = "/sprint/auth/login", method = "POST")
+    public Object login(String username, String password, String role, RSession session) {
+        if (username == null || !"1234".equals(password)) {
+            return Map.of("error", "identifiants invalides (test : mot de passe = 1234)");
+        }
+        String r = (role == null || role.isBlank()) ? "USER" : role;
+        session.set("user", username);
+        session.set("role", r);
+        return Map.of("message", "connecté", "user", username, "role", r);
+    }
+
+    @RRestApi
+    @RUrlMapping(value = "/sprint/auth/logout", method = "POST")
+    public Object logout(RSession session) {
+        session.invalidate();
+        return Map.of("message", "déconnecté");
+    }
+
+    /** PUBLIC : aucune annotation → toujours 200. */
+    @RRestApi
+    @RUrlMapping(value = "/sprint/auth/public", method = "GET")
+    public Object publique() {
+        return Map.of("message", "route ouverte à tous");
+    }
+
+    /** PUBLIC : pour voir ce que contient la session (debug). */
+    @RRestApi
+    @RUrlMapping(value = "/sprint/auth/whoami", method = "GET")
+    public Object whoami(RSession session) {
+        Map<String, Object> r = new LinkedHashMap<>();
+        r.put("user", session.get("user"));
+        r.put("role", session.get("role"));
+        r.put("sessionId", session.getId());
+        return r;
+    }
+
+    /** Sprint 10 (auth simple) : connecté suffit → 401 sans login, 200 avec. */
+    @RAuthenticated
+    @RRestApi
+    @RUrlMapping(value = "/sprint/auth/profil", method = "GET")
+    public Object profil(RSession session) {
+        return Map.of("message", "profil de " + session.get("user"));
+    }
+
+    /** Sprint 10-bis (auth complexe) : rôle ADMIN requis → 401 sans login, 403 si autre rôle, 200 si ADMIN. */
+    @RAuthenticated(roles = { "ADMIN" })
+    @RRestApi
+    @RUrlMapping(value = "/sprint/auth/admin", method = "GET")
+    public Object admin(RSession session) {
+        return Map.of("message", "zone admin", "user", String.valueOf(session.get("user")));
+    }
+
+    /** Sprint 10-bis : AU MOINS UN des rôles suffit → ADMIN ou MANAGER passent, USER non. */
+    @RAuthenticated(roles = { "ADMIN", "MANAGER" })
+    @RRestApi
+    @RUrlMapping(value = "/sprint/auth/staff", method = "GET")
+    public Object staff(RSession session) {
+        return Map.of("message", "zone staff", "role", String.valueOf(session.get("role")));
+    }
+
+    /** Route NON REST protégée : sans login → redirection 302 vers /login (pas de JSON). */
+    @RAuthenticated
+    @RUrlMapping(value = "/sprint/auth/page", method = "GET")
+    public String pageProtegee() {
+        return "accueil";
+    }
+}
