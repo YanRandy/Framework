@@ -9,12 +9,16 @@ import jakarta.servlet.ServletContextListener;
 import randy.framework.model.RMapping;
 import randy.framework.model.RUrlKey;
 import randy.framework.util.RAnnotationHandler;
+import randy.framework.util.RControllerRegistry;
 
 /**
  * Lancé une seule fois au déploiement de l'application (avant toute requête).
- * Scanne les controllers, construit la table des routes et la range dans le ServletContext
- * ("urlList", "prefix", "suffix") pour que le RFrontController la récupère dans init().
- * Une erreur de routage (URL en double) est stockée dans "deploymentError" pour bloquer le démarrage.
+ * Scanne les controllers, construit la table des routes et la range dans le
+ * ServletContext
+ * ("urlList", "prefix", "suffix") pour que le RFrontController la récupère dans
+ * init().
+ * Une erreur de routage (URL en double) est stockée dans "deploymentError" pour
+ * bloquer le démarrage.
  */
 public class RInitListener implements ServletContextListener {
     @Override
@@ -27,10 +31,17 @@ public class RInitListener implements ServletContextListener {
         try {
             Map<RUrlKey, RMapping> urlList = new HashMap<>();
             RAnnotationHandler.scanPaths(packageToScan, urlList);
+
+            RControllerRegistry controllers = new RControllerRegistry();
+            for (RMapping m : urlList.values()) {
+                controllers.register(m.getClassName()); // une seule instance par controller.
+            }
+            context.setAttribute("controllerRegistry", controllers);
             context.setAttribute("urlList", urlList);
             context.setAttribute("prefix", prefix);
             context.setAttribute("suffix", suffix);
-            System.out.println("[FRAMEWORK] Initialisation réussie. " + urlList.size() + " routes chargées en mémoire.");
+            System.out
+                    .println("[FRAMEWORK] Initialisation réussie. " + urlList.size() + " routes chargées en mémoire.");
         } catch (IllegalStateException e) {
             System.err.println("[FRAMEWORK] Erreur critique de routage interceptée au démarrage.");
             context.setAttribute("deploymentError", e);

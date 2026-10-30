@@ -88,12 +88,6 @@ public class RBindController {
         return personne;
     }
 
-    /** Formulaire de test des uploads (vue test-upload.jsp). */
-    @RUrlMapping(value = "/upload", method = "GET")
-    public String uploadForm() {
-        return "test-upload";
-    }
-
     /** Upload d'un fichier (multipart, champ "photo") → RMapFile. */
     @RRestApi
     @RUrlMapping(value = "/upload", method = "POST")

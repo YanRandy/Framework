@@ -18,13 +18,18 @@ import jakarta.servlet.http.HttpServletResponse;
 import randy.framework.auth.RAuthSecurity;
 import randy.framework.model.RMapping;
 import randy.framework.model.RUrlKey;
+import randy.framework.util.RControllerRegistry;
 import randy.framework.util.RRouteDebugger;
 import randy.framework.util.RViewRegistry;
 
 /**
- * Servlet unique de l'application (mappée sur "/") : toutes les requêtes passent ici.
- * Pour chaque requête : trouve la route → vérifie l'auth → instancie le controller
- * → binde les paramètres et appelle la méthode → transforme le résultat en réponse.
+ * Servlet unique de l'application (mappée sur "/") : toutes les requêtes
+ * passent ici.
+ * Pour chaque requête : trouve la route → vérifie l'auth → instancie le
+ * controller
+ * → binde les paramètres et appelle la méthode → transforme le résultat en
+ * réponse.
+ * 
  * @MultipartConfig permet de recevoir des fichiers (RMapFile).
  */
 @MultipartConfig(maxFileSize = 10 * 1024 * 1024, maxRequestSize = 20 * 1024 * 1024)
@@ -34,10 +39,13 @@ public class RFrontController extends HttpServlet {
     private RControllerExec invoker;
     private RResultHandler resultHandler;
     private RAuthSecurity authSecurity;
+    private RControllerRegistry controllerRegistry;
 
     /**
-     * Récupère ce que RInitListener a préparé et crée les objets réutilisés à chaque requête.
-     * Si le scan a échoué (doublon d'URL), on relance l'erreur : l'application ne démarre pas.
+     * Récupère ce que RInitListener a préparé et crée les objets réutilisés à
+     * chaque requête.
+     * Si le scan a échoué (doublon d'URL), on relance l'erreur : l'application ne
+     * démarre pas.
      */
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -47,6 +55,10 @@ public class RFrontController extends HttpServlet {
         Exception err = (Exception) ctx.getAttribute("deploymentError");
         if (err != null)
             throw new ServletException(err.getMessage(), err);
+
+        this.controllerRegistry = (RControllerRegistry) ctx.getAttribute("controllerRegistry");
+        if (controllerRegistry == null)
+            throw new ServletException("controllerRegistry introuvable !");
 
         Map<RUrlKey, RMapping> load = (Map<RUrlKey, RMapping>) ctx.getAttribute("urlList");
         if (load == null)
@@ -78,7 +90,8 @@ public class RFrontController extends HttpServlet {
 
     /**
      * Cœur du framework. L'URL utilisée est celle sans le contexte
-     * (ex : /code-test/livres → /livres), combinée au verbe HTTP pour former la clé.
+     * (ex : /code-test/livres → /livres), combinée au verbe HTTP pour former la
+     * clé.
      */
     private void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -100,8 +113,8 @@ public class RFrontController extends HttpServlet {
             return; // access denied, response already handled
         }
         try {
-            Class<?> clazz = Class.forName(map.getClassName());
-            Object instance = clazz.getDeclaredConstructor().newInstance();
+            Object instance = controllerRegistry.get(map.getClassName());
+            Class<?> clazz = instance.getClass();
             Method method = invoker.findMethod(clazz, map.getMethod());
             Object result = invoker.invoke(method, instance, spring, request);
             boolean handled = resultHandler.handle(method, result, request, response);
@@ -114,7 +127,10 @@ public class RFrontController extends HttpServlet {
         }
     }
 
-    /** Lit un context-param du web.xml, ou retourne la valeur par défaut s'il est absent/vide. */
+    /**
+     * Lit un context-param du web.xml, ou retourne la valeur par défaut s'il est
+     * absent/vide.
+     */
     public static String param(ServletContext ctx, String name, String def) {
         String v = ctx.getInitParameter(name);
         return (v == null || v.isBlank()) ? def : v;
