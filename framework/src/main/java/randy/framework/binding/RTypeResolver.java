@@ -1,0 +1,59 @@
+package randy.framework.binding;
+
+import java.lang.reflect.Parameter;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.context.ApplicationContext;
+
+import randy.framework.model.RMapFile;
+import randy.framework.model.RSession;
+
+/**
+ * Classe chaque paramètre de méthode dans une catégorie (Kind) pour que
+ * RBindingParameter sache comment le remplir depuis la requête.
+ */
+public class RTypeResolver {
+    public enum Kind {
+        PRIMITIVE, OBJECT, LIST, APPLICATION_CONTEXT, ARRAY, MAP, FILE, SESSION, UNKNOWN
+    }
+
+    /** L'ordre des tests compte : par ex. String est "primitif" avant d'être un objet. */
+    public static Kind resolve(Parameter param) {
+        Class<?> type = param.getType();
+
+        if (ApplicationContext.class.isAssignableFrom(type))
+            return Kind.APPLICATION_CONTEXT;
+        if (isPrimitive(type))
+            return Kind.PRIMITIVE;
+        if (type.isArray())
+            return Kind.ARRAY;
+        if (type == RSession.class)
+            return Kind.SESSION;
+        if (List.class.isAssignableFrom(type))
+            return Kind.LIST;
+        if (type == RMapFile.class)
+            return Kind.FILE;
+        if (Map.class.isAssignableFrom(type))
+            return Kind.MAP;
+        return Kind.OBJECT;
+    }
+
+    /** Types convertibles directement depuis une String de la requête (int, Integer, String...). */
+    public static boolean isPrimitive(Class<?> type) {
+        return type.isPrimitive()
+                || type == String.class
+                || isWrapper(type);
+    }
+
+    public static boolean isWrapper(Class<?> type) {
+        return type == Integer.class
+                || type == Long.class
+                || type == Float.class
+                || type == Double.class
+                || type == Boolean.class
+                || type == Byte.class
+                || type == Character.class
+                || type == Short.class;
+    }
+}

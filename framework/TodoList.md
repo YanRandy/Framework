@@ -1,45 +1,42 @@
-### Liste a faire
+Sprint 10:
+annotation: `RAuthenticated.java` sur les methodes et les types
+classe des metiers et fonctionnalites
+package: `randy.framework.auth`
+type de metier:
+- `allow`
+- `deny`
 
-- [x] 1-liste ou Objet[]
-- [x] 2- liste<Objet[]>
-- [x] 3- formulaire avec Objet Complexe multiple
-        ex: Objet study(Personne, Batiment) {}
-        Ca marche hono XD(Claude) avec le switch case d'invoke ca peut.
-- [] 4- Map<key, value[]>
-  - Easier one, adding a key to multiple value.
-<!-- plusieurs valeurs pour la même clé -->
-<input type="checkbox" name="couleurs" value="rouge"/>
-<input type="checkbox" name="couleurs" value="bleu"/>
-<input type="checkbox" name="tailles"  value="S"/>
-<input type="checkbox" name="tailles"  value="M"/>
-<input type="checkbox" name="tailles"  value="XL"/>
- - Type de sortie attendu :
-Map<String, String[]> filtres = {
-    "couleurs" → ["rouge", "bleu"],
-    "tailles"  → ["S", "M", "XL"]
-}
- - Como ?
- - req.getParamaterMap();
-- [] 5- Map <Objet[],List<Objet[]>>
-- [] 6- ?
+Ajout de context param:
+- `userKey`
+- `loginUrl`
 
-# Primitifs
-curl "http://localhost:8080/code-test/api/binding/primitifs?nom=Rakoto&age=22&actif=true"
+Sprint 10-bis:
+annotation: ajout de `String[] roles default {}`
 
-# String[]
-curl "http://localhost:8080/code-test/api/binding/array?tags=java&tags=spring&tags=mvc"
+type de metier:
+- `hasAnyRole`
+- ...
 
-# List<String>
-curl "http://localhost:8080/code-test/api/binding/list?tags=java&tags=spring"
+Ajout de context param:
+- `rolekey`
 
-# int[]
-curl "http://localhost:8080/code-test/api/binding/notes?notes=18&notes=15&notes=20"
+Reste ?
 
-# Objet complexe simple
-curl "http://localhost:8080/code-test/api/binding/personne?nom=Rakoto&prenom=Jean&age=22"
+Tests:
+``` bash
+B=http://localhost:8080/code-test
+curl -s -w "\nHTTP %{http_code}\n" $B/sprint/auth/public
+curl -s -w "\nHTTP %{http_code}\n" $B/sprint/auth/profil
+curl -s -o /dev/null -w "HTTP %{http_code} -> %{redirect_url}\n" $B/sprint/auth/page
+curl -s -c c.txt -b c.txt -d "username=Rakoto&password=1234&role=USER" $B/sprint/auth/login
+curl -s -b c.txt -w "\nHTTP %{http_code}\n" $B/sprint/auth/profil
+curl -s -b c.txt -w "\nHTTP %{http_code}\n" $B/sprint/auth/admin
+curl -s -c c.txt -b c.txt -d "username=Rakoto&password=1234&role=MANAGER" $B/sprint/auth/login
+curl -s -b c.txt -w "\nHTTP %{http_code}\n" $B/sprint/auth/staff
+curl -s -b c.txt -w "\nHTTP %{http_code}\n" $B/sprint/auth/admin
+curl -s -c c.txt -b c.txt -d "username=Rakoto&password=1234&role=ADMIN" $B/sprint/auth/login
+curl -s -b c.txt -w "\nHTTP %{http_code}\n" $B/sprint/auth/admin
+curl -s -b c.txt -X POST $B/sprint/auth/logout
+curl -s -b c.txt -w "\nHTTP %{http_code}\n" $B/sprint/auth/profil
+```
 
-# Deux objets complexes — préfixe obligatoire
-curl "http://localhost:8080/code-test/api/binding/deux?personne.nom=Rakoto&personne.age=22&livre.titre=CleanCode&livre.auteur=Martin"
-
-# Map<String, String[]>
-curl "http://localhost:8080/code-test/api/binding/map?couleurs=rouge&couleurs=bleu&tailles=S&tailles=M"

@@ -36,9 +36,11 @@ ok "Tomcat webapps     : $TOMCAT_WEBAPPS"
 
 # ── 2. Build Maven ─────────────────────────────────────────
 echo ""
-echo "[ 1/3 ] Build Maven (mvn clean package)..."
+echo "[ 1/3 ] Build Maven (framework + code via le pom parent)..."
+# Build depuis le pom parent : le framework est recompilé avec le code.
+# Un "mvn package" lancé dans code/ seul prendrait l'ancien framework-1.0.jar de ~/.m2.
 cd "$PROJECT_DIR"
-mvn clean package -DskipTests -q && ok "Build réussi → $WAR_FILE" || err "Échec du build Maven"
+mvn -f ../pom.xml clean package -pl code -am -DskipTests -q && ok "Build réussi → $WAR_FILE" || err "Échec du build Maven"
 
 # ── 3. Suppression de l'ancienne version ───────────────────
 echo ""
