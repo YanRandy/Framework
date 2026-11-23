@@ -19,7 +19,7 @@ import randy.framework.auth.RAuthSecurity;
 import randy.framework.model.RMapping;
 import randy.framework.model.RUrlKey;
 import randy.framework.util.RControllerRegistry;
-import randy.framework.util.RRouteDebugger;
+import randy.framework.util.RHttpError;
 import randy.framework.util.RViewRegistry;
 
 /**
@@ -104,7 +104,7 @@ public class RFrontController extends HttpServlet {
                 .getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
 
         if (!urlList.containsKey(key)) {
-            RRouteDebugger.renderNotFound(pathInfo, httpMethod, urlList, response);
+            RHttpError.notFound(pathInfo, httpMethod, response);
             return;
         }
 
@@ -112,6 +112,7 @@ public class RFrontController extends HttpServlet {
         if (!authSecurity.allow(map, request, response)) {
             return; // access denied, response already handled
         }
+
         try {
             Object instance = controllerRegistry.get(map.getClassName());
             Class<?> clazz = instance.getClass();
@@ -120,10 +121,10 @@ public class RFrontController extends HttpServlet {
             boolean handled = resultHandler.handle(method, result, request, response);
 
             if (!handled) {
-                RRouteDebugger.renderSuccess(pathInfo, httpMethod, map, result, response);
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT); // void / autre : rien à afficher
             }
         } catch (Exception e) {
-            RRouteDebugger.renderError(pathInfo, httpMethod, map, e, response);
+            RHttpError.error(e, response);
         }
     }
 
