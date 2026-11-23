@@ -58,7 +58,7 @@ L'application est ensuite disponible sur `http://localhost:8080/code-test/`.
 Requête HTTP
   └── RFrontController                (servlet unique, mappée sur "/")
         ├── clé = RUrlKey(url sans contexte, verbe HTTP)
-        ├── recherche dans la table des routes ── absente ──▶ RRouteDebugger.renderNotFound (404 debug)
+        ├── recherche dans la table des routes ── absente ──▶ RHttpError.notFound (404)
         ├── RAuthSecurity.allow()           ── refus ──▶ 401 / 403 / redirection loginUrl
         ├── new Controller() + RControllerExec.findMethod()
         ├── RControllerExec.invoke()  → RBindingParameter.bindAll()  (arguments depuis la requête)
@@ -66,7 +66,7 @@ Requête HTTP
               ├── @RRestApi        → JSON (Jackson)
               ├── RModelAndView    → attributs de requête + vue
               ├── String           → nom de vue
-              └── void / autre     → RRouteDebugger.renderSuccess (page debug)
+              └── void / autre     → 204 No Content
 ```
 
 La table des routes est construite **une seule fois au démarrage** : `RInitListener` appelle
@@ -112,7 +112,7 @@ randy/framework/
     ├── RViewRegistry.java      suffix → renderer
     ├── RJspViewRenderer.java   forward JSP
     ├── RHtmlViewRenderer.java  HTML avec remplacement de {cle}
-    └── RRouteDebugger.java     pages debug (404, succès, exception)
+    └── RHttpError.java         erreurs HTTP (404, 500 + message)
 ```
 
 ---
@@ -215,7 +215,7 @@ Les champs de type tableau / `List` / `Map` d'un objet ne sont pas bindés.
 | `@RRestApi` | JSON |
 | `RModelAndView` | chaque entrée du modèle devient un attribut de requête, puis la vue est rendue |
 | `String` | nom de vue |
-| `void` / autre | page debug du framework (« URL supportée ») |
+| `void` / autre | 204 No Content (rien à afficher) |
 
 Chemin de la vue = `prefix + nom + suffix`, par ex. `/WEB-INF/views/` + `livres` + `.jsp`.
 
