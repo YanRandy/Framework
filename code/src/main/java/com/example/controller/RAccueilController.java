@@ -6,7 +6,7 @@ import randy.framework.annotation.RUrlMapping;
 
 /**
  * Routes de base : page d'accueil et tests simples du routage (Sprints 1 à 4).
- * Montre les 3 types de retour possibles : String (vue), void (page debug), @RRestApi (JSON).
+ * Montre les 3 types de retour possibles : String (vue), void (204 No Content), @RRestApi (JSON).
  */
 @RController
 public class RAccueilController {
@@ -22,7 +22,7 @@ public class RAccueilController {
         return "accueil";
     }
 
-    /** Retour void → le framework affiche sa page debug "URL supportée". */
+    /** Retour void → le framework répond 204 No Content. */
     @RUrlMapping(value = "/test/get", method = "GET")
     public void testGet() {
         System.out.println("Résultat de la méthode GET pour /test/get");
