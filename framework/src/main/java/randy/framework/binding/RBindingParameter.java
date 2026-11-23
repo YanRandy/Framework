@@ -63,6 +63,7 @@ public class RBindingParameter {
     }
 
     // fonction de test si bindObject ne va pas cycle sur lui meme pour toujours
+    @SuppressWarnings("Convert2Diamond")
     public Object bindObject(Class<?> type, String prefix, HttpServletRequest req) throws Exception {
         return bindObject(type, prefix, req, new HashSet<Class<?>>());
     }
@@ -72,6 +73,7 @@ public class RBindingParameter {
      * Les objets imbriqués sont remplis récursivement (ami.nom). "visiting" garde les types en cours
      * pour couper une boucle infinie (Personne qui contient une Personne).
      */
+    @SuppressWarnings("UseSpecificCatch")
     private Object bindObject(Class<?> type, String prefix, HttpServletRequest req, Set<Class<?>> visiting)
             throws Exception {
         if (!visiting.add(type)) {
