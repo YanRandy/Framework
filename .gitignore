@@ -8,6 +8,8 @@ target/
 *.zip
 
 # Cookies des tests curl (voir framework/TodoList.md)
+a.txt
+b.txt
 c.txt
 
 # IDE / OS
@@ -15,4 +17,7 @@ c.txt
 *.iml
 .DS_Store
 
-Todolist.md
+# Notes de correctifs locales
+framework/changes/
+
+.gitignore
