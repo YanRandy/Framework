@@ -19,6 +19,7 @@ public class RControllerRegistry {
         return instances.size();
     }
 
+    @SuppressWarnings("UseSpecificCatch")
     private static Object create(String className) {
         try {
             return Class.forName(className).getDeclaredConstructor().newInstance();

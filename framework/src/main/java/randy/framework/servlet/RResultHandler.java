@@ -9,15 +9,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import randy.framework.annotation.RRestApi;
 import randy.framework.helper.RViewRenderer;
+import randy.framework.model.RApiResponse;
 import randy.framework.model.RModelAndView;
 import randy.framework.util.RViewRegistry;
 
 /**
  * Transforme la valeur retournée par le controller en réponse HTTP :
- *  - @RRestApi      → JSON
- *  - RModelAndView  → attributs du modèle mis dans la requête + rendu de la vue
- *  - String         → nom de vue
- *  - autre / void   → non géré ici (le front controller affiche la page debug)
+ * - @RRestApi → JSON
+ * - RModelAndView → attributs du modèle mis dans la requête + rendu de la vue
+ * - String → nom de vue
+ * - autre / void → non géré ici (le front controller renvoie 204)
  */
 public class RResultHandler {
     private final RViewRegistry registry;
@@ -33,13 +34,18 @@ public class RResultHandler {
 
     // Retourne true si la réponse est complète (JSON ou vue rendue)
     public boolean handle(Method method, Object result,
-                          HttpServletRequest req, HttpServletResponse res)
+            HttpServletRequest req, HttpServletResponse res)
             throws Exception {
 
-        // @RestApi → JSON
+        // @RRestApi → JSON (si RApiResponse : statut HTTP + body seul)
         if (method.isAnnotationPresent(RRestApi.class)) {
             res.setContentType("application/json;charset=UTF-8");
-            res.getWriter().print(toJson(result));
+            Object payload = result;
+            if (result instanceof RApiResponse api) {
+                res.setStatus(api.getStatus());
+                payload = api.getBody();
+            }
+            res.getWriter().print(toJson(payload));
             return true;
         }
 
@@ -56,21 +62,28 @@ public class RResultHandler {
             return true;
         }
 
-        return false; // void ou autre → debug page
+        return false; // void ou autre → 204
     }
 
-    /** Chemin final = prefix + nom de vue + suffix ; le renderer est choisi selon le suffix. */
+    /**
+     * Chemin final = prefix + nom de vue + suffix ; le renderer est choisi selon le
+     * suffix.
+     */
     private void renderView(String viewName, HttpServletRequest req, HttpServletResponse res)
             throws Exception {
         String path = prefix + viewName + suffix;
         RViewRenderer renderer = registry.get(suffix);
-        if (renderer == null) throw new ServletException("Aucun renderer pour : " + suffix);
+        if (renderer == null)
+            throw new ServletException("Aucun renderer pour : " + suffix);
         renderer.render(req, res, path);
     }
 
-    /** Une String est entourée de guillemets à la main ; le reste passe par Jackson. */
+    /**
+     * Une String est entourée de guillemets à la main ; le reste passe par Jackson.
+     */
     private String toJson(Object obj) throws Exception {
-        if (obj instanceof String s) return "\"" + s + "\"";
+        if (obj instanceof String s)
+            return "\"" + s + "\"";
         return mapper.writeValueAsString(obj);
     }
 }

@@ -11,7 +11,6 @@ import java.lang.annotation.Target;
  * Sur la méthode, elle remplace celle de la classe. La vérification est faite par RAuthSecurity.
  */
 @Retention(RetentionPolicy.RUNTIME)
-// @Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.TYPE})
 
 public @interface RAuthenticated {
